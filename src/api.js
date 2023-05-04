@@ -4,6 +4,10 @@ const Strategy = require("./strategy");
 const _getOrdersURL = "https://api.salla.dev/admin/v2/orders";
 const _getCustomersURL = "https://api.salla.dev/admin/v2/customers";
 const _getUserURL = "https://accounts.salla.sa/oauth2/user/info";
+const _getProductsURL = "https://api.salla.dev/admin/v2/products/sku/";
+const _getBranchesURL = "https://api.salla.dev/admin/v2/branches";
+const _postBulkQuantitiesURL = "https://api.salla.dev/admin/v2/products/quantities/bulkSkus";
+
 class API {
     _expires_in = null;
     _refresh_token = null;
@@ -364,6 +368,217 @@ class API {
     onAuth(cb) {
         this._onAuthCallback = cb;
     }
-}
+    /**
+    * get a product details by providing the SKU of the product from the user store
+    *
+    *
+    * Examples:
+    *
+    *     API.getProductDetails(API.getToken());
+    *     API.getProductDetails();
+    *
+    *
+    * @return {Array}
+    * @api public
+    */
+    getProductDetails(sku, token) {
+        var authorization = "Bearer " + (token || this.getToken());
+        var headers = {
+            Authorization: authorization,
+        };
+        return new Promise((resolve, reject) => {
+            this._strategy._oauth2._request(
+                "GET",
+                _getProductsURL + sku,
+                headers,
+                "",
+                "",
+                (err, body, res) => {
+                    if (err) {
+                        this.__resetToken();
+                        return reject(err);
+                    }
 
+                    try {
+                        var json = JSON.parse(body);
+
+                        resolve(json.data);
+                    } catch (err) {
+                        reject({ msg: "failed to parse Data ", err });
+                    }
+                }
+            );
+        });
+    }
+    /**
+    * get all branches from the user store
+    *
+    *
+    * Examples:
+    *
+    *     API.getBranches(API.getToken());
+    *     API.getBranches();
+    *
+    *
+    * @return {Array}
+    * @api public
+    */
+    getAllBranches(token) {
+        var authorization = "Bearer " + (token || this.getToken());
+        var headers = {
+            Authorization: authorization,
+        };
+        return new Promise((resolve, reject) => {
+            this._strategy._oauth2._request(
+                "GET",
+                _getBranchesURL,
+                headers,
+                "",
+                "",
+                (err, body, res) => {
+                    if (err) {
+                        this.__resetToken();
+                        return reject(err);
+                    }
+
+                    try {
+                        var json = JSON.parse(body);
+
+                        resolve(json.data);
+                    } catch (err) {
+                        reject({ msg: "failed to parse Data ", err });
+                    }
+                }
+            );
+        });
+    }
+    /**
+    * post bulk quantities by providing the SKUs of the products in the body request
+    *
+    *
+    * Examples:
+    *
+    *     API.postBulkQuantities({"skus": [{"sku": "IPHONE-XL-PLUS", "quantity": 5 }]}, API.getToken());
+    *     API.getProductDetails({"skus": [{"sku": "IPHONE-XL-PLUS", "quantity": 5 }]});
+    *
+    *
+    * @return {Array}
+    * @api public
+    */
+    postBulkQuantities(post_body, token) {
+        post_body = JSON.stringify(post_body);
+        var authorization = "Bearer " + (token || this.getToken());
+        var headers = {
+            Authorization: authorization,
+            'Content-Type': 'application/json'
+        };
+        return new Promise((resolve, reject) => {
+            this._strategy._oauth2._request(
+                "POST",
+                _postBulkQuantitiesURL,
+                headers,
+                post_body,
+                "",
+                (err, body, res) => {
+                    if (err) {
+                        this.__resetToken();
+                        return reject(err);
+                    }
+
+                    try {
+                        var json = JSON.parse(body);
+
+                        resolve(json.data);
+                    } catch (err) {
+                        reject({ msg: "failed to parse Data ", err });
+                    }
+                }
+            );
+        });
+
+    }
+    /**
+     * post a new order to the user store
+     *
+     *
+     *
+     *
+     * @return {Array}
+     * @api public
+     */
+    postOrder(post_body, token) {
+        post_body = JSON.stringify(post_body);
+        var authorization = "Bearer " + (token || this.getToken());
+        var headers = {
+            Authorization: authorization,
+            'Content-Type': 'application/json'
+        };
+        return new Promise((resolve, reject) => {
+            this._strategy._oauth2._request(
+                "POST",
+                _getOrdersURL,
+                headers,
+                post_body,
+                "",
+                (err, body, res) => {
+                    if (err) {
+                        this.__resetToken();
+                        return reject(err);
+                    }
+
+                    try {
+                        var json = JSON.parse(body);
+
+                        resolve(json.data);
+                    } catch (err) {
+                        reject({ msg: "failed to parse Data ", err });
+                    }
+                }
+            );
+        });
+
+    }
+    /**
+     * post a tag to an existing order in the user store
+     *
+     *
+     *
+     *
+     * @return {Array}
+     * @api public
+     */
+    postTag(order_id, post_body, token) {
+        post_body = JSON.stringify(post_body);
+        var authorization = "Bearer " + (token || this.getToken());
+        var headers = {
+            Authorization: authorization,
+            'Content-Type': 'application/json'
+        };
+        return new Promise((resolve, reject) => {
+            this._strategy._oauth2._request(
+                "POST",
+                _getOrdersURL + "/" + order_id + "/tags",
+                headers,
+                post_body,
+                "",
+                (err, body, res) => {
+                    if (err) {
+                        this.__resetToken();
+                        return reject(err);
+                    }
+
+                    try {
+                        var json = JSON.parse(body);
+
+                        resolve(json.data);
+                    } catch (err) {
+                        reject({ msg: "failed to parse Data ", err });
+                    }
+                }
+            );
+        });
+
+    }
+
+}
 module.exports = API;
