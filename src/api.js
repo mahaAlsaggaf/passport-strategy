@@ -7,6 +7,7 @@ const _getUserURL = "https://accounts.salla.sa/oauth2/user/info";
 const _getProductsURL = "https://api.salla.dev/admin/v2/products/sku/";
 const _getBranchesURL = "https://api.salla.dev/admin/v2/branches";
 const _postBulkQuantitiesURL = "https://api.salla.dev/admin/v2/products/quantities/bulkSkus";
+const _putProductQuantityURL = "https://api.salla.dev/admin/v2/products/quantities/bySku";
 
 class API {
     _expires_in = null;
@@ -476,6 +477,47 @@ class API {
             this._strategy._oauth2._request(
                 "POST",
                 _postBulkQuantitiesURL,
+                headers,
+                post_body,
+                "",
+                (err, body, res) => {
+                    if (err) {
+                        this.__resetToken();
+                        return reject(err);
+                    }
+
+                    try {
+                        var json = JSON.parse(body);
+
+                        resolve(json.data);
+                    } catch (err) {
+                        reject({ msg: "failed to parse Data ", err });
+                    }
+                }
+            );
+        });
+
+    }
+    /**
+    * post product quantity by the sku of the product 
+    *
+    *
+    *
+    *
+    * @return {Array}
+    * @api public
+    */
+    putProductQuantity(sku, post_body, token) {
+        post_body = JSON.stringify(post_body);
+        var authorization = "Bearer " + (token || this.getToken());
+        var headers = {
+            Authorization: authorization,
+            'Content-Type': 'application/json'
+        };
+        return new Promise((resolve, reject) => {
+            this._strategy._oauth2._request(
+                "PUT",
+                _putProductQuantityURL + "/" + sku,
                 headers,
                 post_body,
                 "",
