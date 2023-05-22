@@ -664,5 +664,47 @@ class API {
         });
 
     }
+    /**
+     * post an order history to an existing order in the user store
+     *
+     *
+     *
+     *
+     * @return {Array}
+     * @api public
+     */
+    postOrderHistory(order_id, post_body, token) {
+        post_body = JSON.stringify(post_body);
+        var authorization = "Bearer " + (token || this.getToken());
+        var headers = {
+            Authorization: authorization,
+            'Content-Type': 'application/json'
+        };
+        return new Promise((resolve, reject) => {
+            this._strategy._oauth2._request(
+                "POST",
+                _getOrdersURL + "/" + order_id + "/histories",
+                headers,
+                post_body,
+                "",
+                (err, body, res) => {
+                    if (err) {
+                        this.__resetToken();
+                        return reject(err);
+                    }
+
+                    try {
+                        var json = JSON.parse(body);
+
+                        resolve(json.data);
+                    } catch (err) {
+                        reject({ msg: "failed to parse Data ", err });
+                    }
+                }
+            );
+        });
+
+    }
+
 }
 module.exports = API;
